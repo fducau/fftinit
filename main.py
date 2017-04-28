@@ -39,10 +39,10 @@ transform = transforms.Compose([
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=False, transform=transform)
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=2)
 
-testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=False, transform=transform)
+testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
 testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=2)
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -62,7 +62,7 @@ else:
     # net = ResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
-    net = ResNeXt29_2x64d()
+    net = ResNeXt29_2x64d(cin=9)
 
 if use_cuda:
     net.cuda()
@@ -169,10 +169,12 @@ def test(epoch):
         state['net'] = net.module if use_cuda else net
         state['acc'] = acc
         state['epoch'] = epoch
-        if not os.path.isdir('checkpoint'):
-            os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/ckpt.t7')
         best_acc = acc
+
+    if not os.path.isdir('checkpoint'):
+        os.mkdir('checkpoint')
+    torch.save(state, './checkpoint/ckpt.t7')
+    
 
 lr = args.lr
 state = {
@@ -182,9 +184,9 @@ state = {
             'acc_history':[]
         }
 
-for epoch in range(start_epoch, start_epoch+350):
+for epoch in range(start_epoch, start_epoch+150):
     
-    if epoch == 150 or epoch == 250:
+    if epoch == 50 or epoch == 100:
         lr = lr / 10.
         optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9, weight_decay=5e-4)
 
